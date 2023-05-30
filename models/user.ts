@@ -1,13 +1,16 @@
 import { Schema, SchemaDefinitionProperty, model, models } from "mongoose";
 
 export interface IUser extends Document {
-  _id?: string;
+  id: string;
   email: SchemaDefinitionProperty<string>;
   username: SchemaDefinitionProperty<string>;
   image: string;
 }
 
 const userSchema = new Schema<IUser>({
+  id: {
+    type: String,
+  },
   email: {
     type: String,
     unique: [true, "Email already exists!"],
@@ -26,6 +29,6 @@ const userSchema = new Schema<IUser>({
   },
 });
 
-const User = models.User || model("User", userSchema);
+const User = models.User || model<IUser>("User", userSchema);
 
 export default User;

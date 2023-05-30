@@ -14,35 +14,41 @@ type ProfileProps = {
 const handler = NextAuth({
   providers: [
     GoogleProvider({
-      clientId: `${process.env.GOOGLE_ID}`,
-      clientSecret: `${process.env.GOOGLE_CLIENT_SECRET}`,
+      clientId: process.env.GOOGLE_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
   ],
   callbacks: {
     async session({ session }) {
+      const { user } = session || {};
+
       // store the user id from MongoDB to session
       const sessionUser = await User.findOne({
-        email: session.user.email,
+        email: session.user?.email,
       });
-      session.user.id = sessionUser._id.toString();
+
+      user.id = sessionUser._id.toString();
 
       return session;
     },
+
     async signIn({ account, profile, user, credentials }) {
       try {
         await connectToDB();
 
+        const { name, email, image } = profile || {};
+
         // check if user already exists
         const userExists = await User.findOne({
-          email: profile.email,
+          email: email,
         });
 
         // if not, create a new document and save user in MongoDB
         if (!userExists) {
           await User.create({
-            email: profile.email,
-            username: profile.name.replace(" ", "").toLowerCase(),
-            image: profile.picture,
+            email: email,
+            username: name?.replace(" ", "").toLowerCase(),
+            image,
           });
         }
 
